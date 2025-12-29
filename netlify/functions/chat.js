@@ -13,7 +13,7 @@ exports.handler = async function(event, context) {
     // 3. 取得 API Key
     const apiKey = process.env.GEMINI_API_KEY;
     
-    // 4. 設定 AI 人設 (維持不變)
+    // 4. 設定 AI 人設 (包含你指定的嚴格格式要求)
     const systemPrompt = `
     你是一位嚴格但溫柔的韓語家教，同時也是韓國綜藝《換乘戀愛(Transit Love)》S1~S4 的狂熱粉絲。
     
@@ -24,6 +24,7 @@ exports.handler = async function(event, context) {
     
     【情境控制】
     當前對話主題是：${scenario}
+    
     請根據主題調整你的語氣：
     - 如果主題是「戀愛/分手/糾葛」：請展現你對《換乘戀愛》的投入，用感性、共情甚至稍微激動的語氣回應。
     - 如果主題是「生活/剪髮/旅遊」或其他：請保持專業但熱情，用生動的方式（像是綜藝節目字幕般的口氣）提供實用的韓語建議，不要硬聊戀愛，但要保持「韓語家教」的身份。
@@ -38,17 +39,18 @@ exports.handler = async function(event, context) {
     {
       "korean": "你的韓語回應",
       "chinese": "對應的繁體中文翻譯",
-      "hints": ["建議1 (中)", "建議2 (中)", "建議3 (中)"]
+      "hints": ["韓文句子1 (中文翻譯)", "韓文句子2 (中文翻譯)", "韓文句子3 (中文翻譯)"]
     }
+
     注意：hints 陣列中的格式必須嚴格遵守 "韓文句子 (中文翻譯)" 的形式，例如 "시간이 해결해 줄 거예요 (時間會解決一切的)"。
     `;
 
     const finalPrompt = `${systemPrompt}\n\n使用者說：${userMessage}\n\n請依照 JSON 格式回應：`;
 
-    // 5. 【關鍵修正】改用最穩定的 gemini-pro 模型
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+    // 5. 使用 gemini-1.5-flash 模型 (直接連線)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     
-    console.log("Attempting to connect to:", url.replace(apiKey, "HIDDEN_KEY")); // 日誌紀錄 (不外洩 Key)
+    console.log("Attempting to connect to:", url.replace(apiKey, "HIDDEN_KEY")); 
 
     const response = await fetch(url, {
       method: 'POST',
@@ -58,9 +60,9 @@ exports.handler = async function(event, context) {
       })
     });
 
-    // 6. 錯誤處理 (顯示更詳細的 Google 錯誤訊息)
+    // 6. 錯誤處理
     if (!response.ok) {
-      const errorData = await response.json(); // 嘗試讀取 Google 回傳的詳細錯誤
+      const errorData = await response.json(); 
       console.error("Google API Error Detail:", JSON.stringify(errorData));
       throw new Error(`Google API 拒絕連線: ${response.status} ${response.statusText} - ${errorData.error?.message || '未知錯誤'}`);
     }
@@ -68,10 +70,12 @@ exports.handler = async function(event, context) {
     const resultData = await response.json();
     
     if (!resultData.candidates || resultData.candidates.length === 0) {
-      throw new Error("AI 有回應但內容是空的 (可能被安全過濾)");
+      throw new Error("AI 有回應但內容是空的");
     }
 
     const rawText = resultData.candidates[0].content.parts[0].text;
+    
+    // 7. 清理 JSON 字串
     let cleanText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
 
     return {
