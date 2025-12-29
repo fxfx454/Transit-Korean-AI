@@ -14,7 +14,7 @@ exports.handler = async function(event, context) {
 
     // 3. 設定 Gemini API
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // 4. 設定 AI 人設與規則 (System Prompt) - 包含提示詞生成指令
     const systemPrompt = `
