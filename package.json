@@ -1,0 +1,9 @@
+{
+  "name": "transit-korean-ai",
+  "version": "1.0.0",
+  "description": "Transit Korean with Gemini AI",
+  "main": "index.js",
+  "dependencies": {
+    "@google/generative-ai": "^0.11.0"
+  }
+}
