@@ -4,6 +4,7 @@
   "description": "Transit Korean with Gemini AI",
   "main": "index.js",
   "dependencies": {
-    "@google/generative-ai": "^0.11.0"
+    "@google/generative-ai": "^0.21.0"
   }
+
 }
