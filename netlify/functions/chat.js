@@ -1,4 +1,35 @@
 exports.handler = async function(event, context) {
+  // --- 🔒 資安防護區 (CORS & Method Check) ---
+  
+  // 1. 設定你的網址 (這是白名單)
+  const ALLOWED_ORIGIN = "https://transit-koreanai.netlify.app";
+  
+  // 2. 獲取來訪者的身分證 (Origin)
+  const requestOrigin = event.headers.origin || event.headers.Origin;
+
+  // 3. 處理 "預檢請求" (瀏覽器禮貌性的詢問)
+  // 如果瀏覽器問：我可以傳資料給你嗎？ 我們要回：可以，但只限白名單。
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+      body: ""
+    };
+  }
+
+  // 4. 嚴格檢查 (如果不是自己人，直接踢出去)
+  if (requestOrigin && requestOrigin !== ALLOWED_ORIGIN) {
+    return {
+      statusCode: 403,
+      body: JSON.stringify({ error: "Forbidden: 您的請求來源不被允許。" })
+    };
+  }
+  
+  // --- ⬆️ CORS 防護結束 ⬆️ ---
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
@@ -67,6 +98,7 @@ exports.handler = async function(event, context) {
     1. 針對使用者的話進行簡短回應 (韓文 + 中文翻譯)。
     2. 回應後，請為使用者設想「接下來他可以怎麼回答你」的 3 個選項。
     3. 這 3 個選項必須是 TOPIK 5/6 級程度的高級韓語短句。
+    4. 若使用者使用的單字有「語意相近但語感不同」的高級單字（例如：使用『우울하다』但情境適合『꿀꿀하다』，或是混淆『기인하다/비롯되다』），請務必在回應中，順便用一句話解釋兩者的語感差異，幫助使用者區分細微差別。
 
     【回應格式規定】
     請絕對不要回傳純文字，必須回傳一個標準的 JSON 格式 (嚴禁使用 markdown 符號)：
@@ -109,7 +141,8 @@ exports.handler = async function(event, context) {
 
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json",
+                 "Access-Control-Allow-Origin": ALLOWED_ORIGIN },
       body: cleanText
     };
 
@@ -117,6 +150,7 @@ exports.handler = async function(event, context) {
     console.error("Critical Error:", error);
     return {
       statusCode: 500,
+      headers: { "Access-Control-Allow-Origin": "https://transit-koreanai.netlify.app" },
       body: JSON.stringify({ error: `系統錯誤: ${error.message}` })
     };
   }
