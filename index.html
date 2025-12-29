@@ -2825,235 +2825,110 @@ function showSection(id, btn) {
     }
 }
 
-// CHAT DB
-const chatData = {
+/* === NEW: AI CHAT LOGIC (Gemini 3 Pro - Hybrid Mode) === */
+
+// 1. 本地題庫 (保留原本 6 大主題的開場與固定提示)
+const localScenarios = {
     dating: {
-        init: {
-            k: "솔직히 연애할 때 '가치관 차이'를 느껴본 적 있어요? 어떤 부분에서 가장 안 맞던가요?", 
-            c: "說實話，戀愛時有感受過「價值觀差異」嗎？在哪方面最合不來？",
-            hints: ["저는 소비 습관이 안 맞으면 힘들더라고요. (消費習慣不合會很累)", "연락 빈도 문제로 갈등이 생기곤 했어요. (常因聯絡頻率產生矛盾)", "미래 비전이 다르면 관계 지속이 어렵죠. (未來願景不同很難維持)"]
-        },
-        intents: [
-            { k:["돈","경제","소비","비용"], rK:"경제 관념 차이는 현실적인 문제죠. 데이트 비용은 어떻게 부담하는 게 좋다고 생각하세요?", rC:"金錢觀差異是現實問題。你覺得約會費用該怎麼分擔？", hints:["더치페이가 합리적이죠. (AA制合理)", "여유 있는 사람이 더 내는 게 맞죠. (有餘裕的人多出)"] },
-            { k:["연락","집착","전화"], rK:"연락 빈도는 연인 사이의 큰 숙제죠. 본인은 연락을 얼마나 자주 해야 한다고 봐요?", rC:"聯絡頻率是戀人間的大課題。你覺得應該多常聯絡？", hints:["실시간으로 공유하는 게 좋아요. (即時分享)", "개인 시간을 존중해줬으면 해요. (尊重個人時間)"] }
-        ],
-        bridges: [
-            {k:"음, 일리 있는 말이네요.", c:"嗯，有道理。"},
-            {k:"맞아요, 사람마다 기준이 다르니까요.", c:"沒錯，每個人標準不同。"},
-            {k:"솔직한 답변 고마워요.", c:"謝謝你誠實的回答。"},
-            {k:"그건 참 어려운 문제인 것 같아요.", c:"那似乎真是個難題。"},
-            {k:"저도 비슷한 경험이 있어서 공감되네요.", c:"我也有類似經驗，很有共鳴。"}
-        ],
-        fallbacks: [
-            {k:"그렇다면, 연애 상대의 직업이나 능력은 얼마나 중요하다고 생각하세요?", c:"那麼，你認為戀愛對象的職業或能力有多重要？", hints:["능력보다 대화가 통하는 게 우선이에요. (溝通優先)"]},
-            {k:"혹시 '결혼'을 전제로 하지 않은 연애는 시간 낭비라고 생각하시나요?", c:"你會覺得不以「結婚」為前提的戀愛是浪費時間嗎？", hints:["아뇨, 그 과정에서 배우는 점도 많아요. (能學到很多)"]},
-            {k:"연인 사이에 '거짓말'은 선의의 거짓말이라도 절대 안 된다고 보시나요?", c:"你認為戀人之間即使是善意的謊言也絕對不行嗎？", hints:["신뢰가 중요하니 솔직해야죠. (信任很重要)"]},
-            {k:"장거리 연애(롱디)를 하게 된다면 버틸 자신이 있으세요?", c:"如果要談遠距離戀愛，你有自信撐下去嗎？", hints:["몸이 멀어지면 마음도 멀어질 것 같아요. (身遠心遠)"]},
-            {k:"가장 이상적인 이별의 방법은 무엇이라고 생각하세요?", c:"你認為最理想的分手方式是什麼？", hints:["서로 응원하며 좋게 헤어지는 거죠. (好聚好散)"]},
-            {k:"상대방이 과거 연애사를 어디까지 알고 싶으세요?", c:"想知道對方過去的情史到什麼程度？", hints:["모르는 게 약이라고 생각해요. (不知情是良藥)"]},
-            {k:"연인이 나의 취미나 취향을 존중해주지 않는다면 어떻게 하실 건가요?", c:"如果戀人不尊重你的興趣或取向，你會怎麼做？", hints:["대화를 통해 이해를 구할 거예요. (溝通尋求理解)"]},
-            {k:"사랑의 유효기간이 있다고 믿으시나요?", c:"你相信愛情有保存期限嗎？", hints:["열정은 식어도 정으로 만나는 거죠. (靠情份交往)"]},
-            {k:"나이 차이가 많은 연애에 대해서는 어떻게 생각하세요?", c:"對於年齡差很大的戀愛有什麼看法？", hints:["사랑에 나이는 상관없다고 봐요. (愛與年齡無關)"]},
-            {k:"본인에게 있어서 연애는 삶의 1순위인가요?", c:"對你來說，戀愛是人生的第一順位嗎？", hints:["일과 꿈이 더 중요해요. (工作夢想更重要)"]},
-            {k:"동거에 대해서는 긍정적인 편인가요?", c:"對於同居是持正面態度嗎？", hints:["결혼 전에 미리 살아보는 것도 나쁘지 않아요. (試婚也不壞)"]},
-            {k:"연인이 이성 친구(남사친/여사친)와 단둘이 만나는 걸 이해할 수 있나요?", c:"能理解戀人跟異性朋友單獨見面嗎？", hints:["절대 이해 못 해요. (絕不理解)"]},
-            {k:"연애할 때 가장 중요하게 생각하는 성격은 무엇인가요?", c:"戀愛時最看重的個性是什麼？", hints:["배려심이 많은 사람이 좋아요. (有體貼心的人)"]},
-            {k:"상대방이 너무 바빠서 데이트를 자주 못 한다면 기다려줄 수 있나요?", c:"如果對方太忙很少約會，能等待嗎？", hints:["일 때문이라면 이해할 수 있어요. (工作的話能理解)"]},
-            {k:"공개 연애에 대해서는 어떻게 생각하세요?", c:"對於公開戀愛有什麼看法？", hints:["부담스러워서 비밀로 하고 싶어요. (想保密)"]}
-        ]
+        topic: "戀愛觀與價值觀 (Dating)",
+        intro: "솔직히 연애할 때 '가치관 차이'를 느껴본 적 있어요? 어떤 부분에서 가장 안 맞던가요?",
+        trans: "說實話，戀愛時有感受過「價值觀差異」嗎？在哪方面最合不來？",
+        hints: ["저는 소비 습관이 안 맞으면 힘들더라고요. (消費習慣不合會很累)", "연락 빈도 문제로 갈등이 생기곤 했어요. (常因聯絡頻率產生矛盾)", "미래 비전이 다르면 관계 지속이 어렵죠. (未來願景不同很難維持)"]
     },
     breakup: {
-        init: { k: "헤어진 지 꽤 됐는데, 문득문득 생각나는 순간이 있지 않나요?", c: "分手有一陣子了，偶爾會有突然想起的瞬間吧？", hints: ["맛있는 걸 먹거나 좋은 곳에 갔을 때요. (去好地方時)", "밤에 혼자 술 한잔 할 때요. (獨自喝酒時)"] },
-        intents: [],
-        bridges: [
-            {k:"이별 후에는 누구나 겪는 과정이죠.",c:"分手後誰都會經歷的過程。"},
-            {k:"시간이 약이라는 말이 맞나 봐요.",c:"時間是良藥這話似乎沒錯。"},
-            {k:"그 마음 충분히 이해해요.",c:"我很理解那種心情。"},
-            {k:"정말 쉽지 않은 감정이네요.",c:"真是不容易的情感呢。"}
-        ],
-        fallbacks: [
-            {k:"그 사람과 헤어진 가장 결정적인 이유는 뭐였나요?", c:"分手的最決定性原因是什麼？", hints:["성격 차이를 극복할 수 없었어요. (無法克服性格差)"]},
-            {k:"이별 후유증을 극복하는 본인만의 방법이 있나요?", c:"有自己克服分手後遺症的方法嗎？", hints:["운동에 매진하거나 바쁘게 일해요. (忙碌工作)"]},
-            {k:"만약 그 사람에게 다시 연락이 온다면 받아줄 의향이 있으세요?", c:"如果那個人再聯絡你，你有意願接受嗎？", hints:["아니요, 같은 이유로 또 헤어질 거예요. (會重蹈覆轍)"]},
-            {k:"헤어진 연인과 친구로 지내는 게 가능하다고 보세요?", c:"你覺得跟前任當朋友是可能的嗎？", hints:["사랑했던 사이라 불가능해요. (曾相愛不可能)"]},
-            {k:"그 사람에게 못해줘서 후회되는 점이 있나요?", c:"有因為沒能為他做什麼而後悔的嗎？", hints:["더 많이 이해해주지 못한 게 미안해요. (沒能多理解)"]},
-            {k:"다음 연애를 시작할 준비는 되셨나요?", c:"準備好開始下一段戀愛了嗎？", hints:["아직은 혼자만의 시간이 필요해요. (還需獨處時間)"]},
-            {k:"이별이 본인에게 가르쳐준 교훈이 있다면요?", c:"如果說分手教會了你什麼教訓？", hints:["나 자신을 더 사랑해야 한다는 걸 배웠어요. (要更愛自己)"]},
-            {k:"추억이 담긴 물건들은 다 정리하셨나요?", c:"充滿回憶的物品都整理好了嗎？", hints:["네, 눈에 보이면 힘드니까 다 버렸어요. (全丟了)"]},
-            {k:"헤어지고 나서 그 사람의 SNS를 염탐한 적 있나요?", c:"分手後有偷看過對方的社群軟體嗎？", hints:["솔직히 궁금해서 몇 번 봤어요. (好奇看過)"]},
-            {k:"주변 사람들에게 이별 사실을 바로 알리는 편인가요?", c:"是會馬上告知周圍人分手事實的類型嗎？", hints:["아니요, 마음이 정리될 때까지 숨겨요. (暫時隱瞞)"]},
-            {k:"이별 후폭풍이 가장 심하게 왔을 때는 언제였나요?", c:"分手後遺症來得最嚴重是什麼時候？", hints:["헤어지고 한 달쯤 지났을 때요. (一個月後)"]},
-            {k:"새로운 사람을 만날 때 전 애인과 비교하게 되나요?", c:"認識新對象時會跟前任比較嗎？", hints:["의식하지 않으려고 노력해요. (努力不比較)"]},
-            {k:"다시 사랑을 시작하는 게 두렵지는 않나요?", c:"再次開始愛情會感到害怕嗎？", hints:["상처받을까 봐 조금 겁나요. (怕受傷)"]},
-            {k:"전 연인과 우연히 마주친다면 어떨 것 같아요?", c:"如果偶然遇見前任會怎樣？", hints:["아무렇지 않게 인사하고 싶어요. (裝沒事打招呼)"]},
-            {k:"이별 노래를 들으면 공감이 많이 되시나요?", c:"聽分手歌會很有共鳴嗎？", hints:["가사가 다 제 이야기 같아서 슬퍼요. (像在說我的故事)"]}
-        ]
+        topic: "分手與情感整理 (Breakup)",
+        intro: "헤어진 지 꽤 됐는데, 문득문득 생각나는 순간이 있지 않나요?",
+        trans: "分手有一陣子了，偶爾會有突然想起的瞬間吧？",
+        hints: ["맛있는 걸 먹거나 좋은 곳에 갔을 때요. (去好地方時)", "밤에 혼자 술 한잔 할 때요. (獨自喝酒時)"]
     },
     conflict: {
-        init: { k: "너는 왜 항상 네 입장에서만 합리화해? 내 기분은 생각 안 해?", c: "你為什麼總是只將自己的立場合理化？不考慮我的心情嗎？", hints: ["미안해, 내 생각만 고집했어. (抱歉太固執)", "오해를 풀고 싶어서 그랬어. (想解開誤會)"] },
-        intents: [],
-        bridges: [
-            {k:"서로 화를 좀 가라앉히고 이야기하자.",c:"彼此消消氣再談吧。"},
-            {k:"네가 그렇게 느꼈다면 미안해.",c:"如果你那樣覺得，對不起。"},
-            {k:"우리 서로 조금만 양보하자.",c:"我們互相讓步一點吧。"},
-            {k:"내가 너를 너무 몰아세운 것 같아.",c:"我好像太逼迫你了。"}
-        ],
-        fallbacks: [
-            {k:"지금 이 상황에서 내가 어떻게 해야 네 화가 풀리겠어?", c:"現在這情況我要怎麼做你才會消氣？", hints:["진심 어린 사과를 원해. (想要真心道歉)"]},
-            {k:"우리가 계속 같은 문제로 싸우는 원인이 뭘까?", c:"我們一直因同樣問題吵架的原因是什麼？", hints:["대화 방식에 문제가 있는 것 같아. (對話方式問題)"]},
-            {k:"내 말이 잔소리로만 들려? 너 잘되라고 하는 소리잖아.", c:"我的話只像嘮叨嗎？是為你好才說的。", hints:["알지만 말투가 너무 공격적이야. (語氣太攻擊性)"]},
-            {k:"잠깐 시간을 갖고 냉정하게 생각해보는 건 어때?", c:"暫時分開冷靜思考一下如何？", hints:["좋아, 감정이 가라앉은 뒤에 다시 이야기하자. (冷靜後再談)"]},
-            {k:"너는 갈등을 회피하려고만 하는 게 문제야.", c:"你的問題是只想逃避衝突。", hints:["싸우면 말이 험하게 나올까 봐 피하는 거야. (怕說難聽話)"]},
-            {k:"내가 너를 무시한다고 느꼈다면 구체적으로 언제였어?", c:"如果你覺得我無視你，具體是什麼時候？", hints:["내 말을 끊고 네 말만 할 때였어. (打斷我的話時)"]},
-            {k:"서로 양보해서 타협점을 찾을 수는 없을까?", c:"不能互相讓步找個妥協點嗎？", hints:["네가 먼저 사과하면 나도 노력할게. (你先道歉我會努力)"]},
-            {k:"이대로 가면 우리 관계가 끝날 수도 있다는 거 알아?", c:"你知道照這樣下去我們關係可能會結束嗎？", hints:["알아, 그래서 노력하고 있잖아. (知道，正在努力)"]},
-            {k:"내가 노력하고 있다는 건 인정해 줄 수 없어?", c:"不能認可我正在努力嗎？", hints:["결과가 보이지 않아서 답답해. (看不到結果)"]},
-            {k:"자존심 세우지 말고 솔직하게 말해줄래?", c:"別逞強自尊心，能誠實說嗎？", hints:["사실은 나도 많이 힘들었어. (其實我也很累)"]},
-            {k:"제3자에게 우리 문제를 이야기하는 건 어떻게 생각해?", c:"跟第三者講我們的問題你覺得如何？", hints:["우리 문제는 우리끼리 해결하고 싶어. (想自己解決)"]},
-            {k:"과거의 일을 다시 꺼내는 건 그만하자.", c:"別再翻舊帳了吧。", hints:["알겠어, 현재에만 집중할게. (專注現在)"]},
-            {k:"우리가 싸우지 않으려면 어떤 규칙이 필요할까?", c:"為了不吵架我們需要什麼規則？", hints:["화나도 막말은 하지 말자. (不說狠話)"]},
-            {k:"너는 내가 너를 사랑한다는 걸 믿긴 해?", c:"你相信我愛你嗎？", hints:["믿지만 표현 방식이 서운해. (表達方式讓人難過)"]},
-            {k:"오늘 하루종일 연락 안 된 건 너무한 거 아니야?", c:"今天整天聯絡不上太過分了吧？", hints:["배터리가 없어서 그랬어. 미안해. (沒電了對不起)"]}
-        ]
+        topic: "矛盾爭執與解決 (Conflict)",
+        intro: "너는 왜 항상 네 입장에서만 합리화해? 내 기분은 생각 안 해?",
+        trans: "你為什麼總是只將自己的立場合理化？不考慮我的心情嗎？",
+        hints: ["미안해, 내 생각만 고집했어. (抱歉太固執)", "오해를 풀고 싶어서 그랬어. (想解開誤會)"]
     },
     salon: {
-        init: { k: "고객님, 오늘은 어떤 스타일로 변화를 주고 싶으세요?", c: "顧客您好，今天想嘗試什麼樣的風格變化？", hints: ["단발로 확 자르고 싶어요. (想剪短髮)", "분위기 있게 염색을 하고 싶어요. (想染髮)"] },
-        intents: [],
-        bridges: [
-            {k:"네, 고객님 이미지랑 잘 어울릴 것 같아요.",c:"是，感覺跟您的形象很搭。"},
-            {k:"탁월한 선택이세요!",c:"卓越的選擇！"},
-            {k:"그 스타일도 좋지만, 이건 어떠세요?",c:"那風格也不錯，但這個如何？"},
-            {k:"전문가 입장에서 추천드리자면...",c:"以專家立場推薦的話..."}
-        ],
-        fallbacks: [
-            {k:"머리 기르는 중이신가요? 기장이 좀 애매하네요.", c:"是在留長頭髮嗎？長度有點尷尬呢。", hints:["네, 거지존이라 관리가 힘들어요. (過渡期很累)"]},
-            {k:"평소에 손질은 잘 하고 다니시는 편이세요?", c:"平常出門會好好整理頭髮嗎？", hints:["아뇨, 똥손이라 드라이만 해요. (手殘黨只會吹乾)"]},
-            {k:"앞머리를 내면 얼굴이 더 작아 보일 것 같은데 어떠세요?", c:"剪瀏海的話臉看起來會更小，覺得如何？", hints:["관리가 귀찮을 것 같아서 고민되네요. (怕難整理)"]},
-            {k:"요즘 유행하는 레이어드 컷이나 히피펌은 관심 없으세요?", c:"對最近流行的層次剪或嬉皮燙沒興趣嗎？", hints:["너무 튀는 건 부담스러워요. (太顯眼有負擔)"]},
-            {k:"모발 손상이 좀 있는데 클리닉도 같이 진행해 드릴까요?", c:"髮質有點受損，要一起做護髮嗎？", hints:["네, 영양 좀 듬뿍 넣어주세요. (多加點營養)"]},
-            {k:"염색하신 지 꽤 되셔서 뿌리랑 톤 차이가 나네요.", c:"染髮很久了，髮根跟髮色有色差呢。", hints:["맞아요, 뿌리 염색이 시급해요. (補染刻不容緩)"]},
-            {k:"마무리는 웨이브로 넣어드릴까요, 아니면 차분하게 펴드릴까요?", c:"最後要幫您弄捲，還是順直？", hints:["약속 있으니까 웨이브로 해주세요. (有約請弄捲)"]},
-            {k:"두피가 좀 예민하신 편인 것 같은데 평소에 가려우세요?", c:"頭皮好像有點敏感，平常會癢嗎？", hints:["환절기만 되면 가려워요. (換季會癢)"]},
-            {k:"혹시 보고 오신 연예인 사진 있으시면 보여주시겠어요?", c:"如果有找藝人照片可以給我看嗎？", hints:["이 배우처럼 자연스럽게 해주세요. (像這演員一樣自然)"]},
-            {k:"멤버십 가입하시면 오늘 시술 할인되는데 도와드릴까요?", c:"加入會員今天微整打折，要幫您辦理嗎？", hints:["다음에 올 때 할게요. (下次再辦)"]},
-            {k:"평소에 샴푸는 어떤 제품 쓰세요?", c:"平常都用什麼洗髮精？", hints:["그냥 마트에서 파는 거 써요. (超市賣的)"]},
-            {k:"머리숱이 많으셔서 숱을 좀 쳐야겠어요.", c:"髮量很多，得打薄一點。", hints:["네, 가볍게 정리해 주세요. (輕盈整理)"]},
-            {k:"혹시 특별한 날이라서 머리 하시는 거예요?", c:"是因為特別的日子才來弄頭髮嗎？", hints:["네, 저녁에 소개팅이 있어요. (晚上有相親)"]},
-            {k:"머리 색을 좀 더 밝게 빼는 건 어떠세요?", c:"髮色再染亮一點如何？", hints:["직장 때문에 너무 밝은 건 안 돼요. (工作關係不行)"]},
-            {k:"드라이하는 법 알려드릴까요?", c:"要教您怎麼吹整嗎？", hints:["네, 집에서도 쉽게 할 수 있게 알려주세요. (請教簡單方法)"]}
-        ]
+        topic: "形象改造與風格 (Salon)",
+        intro: "고객님, 오늘은 어떤 스타일로 변화를 주고 싶으세요?",
+        trans: "顧客您好，今天想嘗試什麼樣的風格變化？",
+        hints: ["단발로 확 자르고 싶어요. (想剪短髮)", "분위기 있게 염색을 하고 싶어요. (想染髮)"]
     },
     food: {
-        init: { k: "오늘 저녁 메뉴는 뭘로 할까요? 매운 거? 아니면 담백한 거?", c: "今天晚餐吃什麼？辣的？還是清淡的？", hints: ["스트레스 받아서 매운 게 당겨요. (壓力大想吃辣)", "따뜻한 국물 요리가 좋겠어요. (熱湯料理)"] },
-        intents: [],
-        bridges: [
-            {k:"오, 그거 정말 맛있겠는데요?",c:"喔，那感覺真好吃。"},
-            {k:"좋은 선택이에요!",c:"好選擇！"},
-            {k:"저도 딱 그게 생각났어요.",c:"我也剛好想到那個。"},
-            {k:"역시 먹을 줄 아시네요.",c:"果然很懂吃呢。"}
-        ],
-        fallbacks: [
-            {k:"혹시 못 드시는 음식이나 알레르기 있으세요?", c:"有不敢吃的食物或過敏嗎？", hints:["고수는 빼고 주세요. (請去香菜)"]},
-            {k:"요즘 핫한 맛집이 있는데 웨이팅이 길어요. 괜찮으세요?", c:"最近有熱門店但排隊很長，可以嗎？", hints:["기다리는 건 질색이라 딴 데 가요. (討厭等待)"]},
-            {k:"식사하고 나서 디저트로 뭐 먹을까요?", c:"吃完飯後甜點要吃什麼？", hints:["달달한 케이크 먹으러 가요. (吃甜蛋糕)"]},
-            {k:"오늘 술도 한잔 곁들일까요?", c:"今天也要喝一杯嗎？", hints:["내일 출근해야 하니 맥주만 해요. (只喝啤酒)"]},
-            {k:"한식, 중식, 일식, 양식 중에서 뭐가 제일 당기세요?", c:"韓式、中式、日式、西式中想吃哪個？", hints:["깔끔하게 일식 어때요? (日式如何)"]},
-            {k:"다이어트 중이라고 하셨는데 메뉴 괜찮으시겠어요?", c:"說在減肥，這菜單沒關係嗎？", hints:["오늘만 치팅데이로 할래요. (當作放縱日)"]},
-            {k:"이 식당은 가성비가 좋은데 맛은 평범하네요.", c:"這餐廳CP值高但味道普通呢。", hints:["싼 맛에 먹는 거죠 뭐. (吃便宜的嘛)"]},
-            {k:"배달 시켜서 집에서 편하게 먹을까요?", c:"叫外送在家舒服地吃嗎？", hints:["좋아요, 배달비 아끼게 포장해와요. (外帶省運費)"]},
-            {k:"매운 음식 잘 드시는 편이세요?", c:"算能吃辣嗎？", hints:["네, 웬만큼 매운 건 잘 먹어요. (普通辣還行)"]},
-            {k:"오늘 식사는 제가 살게요. 다음에 사주세요.", c:"今天這頓我請，下次你請。", hints:["잘 먹겠습니다! 다음엔 제가 살게요. (開動了！下次我請)"]},
-            {k:"혹시 비건 메뉴도 좋아하세요?", c:"喜歡素食菜單嗎？", hints:["가끔은 건강하게 먹는 것도 좋죠. (偶爾健康吃)"]},
-            {k:"지금 배가 많이 고프신가요?", c:"現在肚子很餓嗎？", hints:["네, 당장이라도 쓰러질 것 같아요. (快昏倒了)"]},
-            {k:"야식으로 치킨 어때요?", c:"宵夜吃炸雞如何？", hints:["다이어트 중이라 참아야 해요. (要忍耐)"]},
-            {k:"이 집은 반찬이 정말 맛있네요.", c:"這家的小菜真好吃。", hints:["네, 리필 좀 더 달라고 할까요? (要續盤嗎)"]},
-            {k:"밥 다 먹고 산책이라도 할까요?", c:"吃完飯去散步嗎？", hints:["좋아요, 소화도 시킬 겸 걸어요. (散步消化)"]}
-        ]
+        topic: "飲食喜好與文化 (Food)",
+        intro: "오늘 저녁 메뉴는 뭘로 할까요? 매운 거? 아니면 담백한 거?",
+        trans: "今天晚餐吃什麼？辣的？還是清淡的？",
+        hints: ["스트레스 받아서 매운 게 당겨요. (壓力大想吃辣)", "따뜻한 국물 요리가 좋겠어요. (熱湯料理)"]
     },
-   social: {
-        init: { 
-            k: "최근 인공지능(AI) 기술이 급격히 발전하고 있는데요, 이것이 장차 인간의 일자리를 위협한다고 생각하시나요?", 
-            c: "最近人工智慧(AI)技術急遽發展，您認為這將來會威脅人類的工作機會嗎？", 
-            hints: ["단순 노동은 대체되겠지만, 창의적인 직업은 살아남을 것입니다. (單純勞動被取代，創意職存活)", "인간과 AI가 공존하는 새로운 형태의 일자리가 생길 겁니다. (產生共存的新工作形態)"] 
-        },
-        intents: [
-            { 
-                k: ["창의", "예술", "감정"], 
-                rK: "창의성이나 공감 능력은 AI가 흉내 내기 어려운 인간만의 영역이죠. 그렇다면 미래 교육은 어떤 방향으로 나아가야 할까요?", 
-                rC: "創意或共感能力是AI難以模仿的人類領域。那麼未來的教育該往哪個方向發展？", 
-                hints: ["암기 위주가 아닌, 비판적 사고력을 길러야 합니다. (非背誦，培養批判思考)", "AI를 도구로 활용하는 능력을 가르쳐야 합니다. (教導運用AI的能力)"] 
-            },
-            { 
-                k: ["위협", "실업", "대체"], 
-                rK: "일자리 감소에 대한 우려가 크군요. 이러한 변화에 대비하기 위해 정부나 사회는 어떤 안전망을 갖춰야 할까요?", 
-                rC: "對工作減少的擔憂很大呢。為了應對這種變化，政府或社會應具備什麼安全網？", 
-                hints: ["기본소득 제도의 도입을 검토해야 합니다. (檢討引進基本收入)", "재교육 프로그램을 통해 직무 전환을 도와야 합니다. (透過再教育幫助轉職)"] 
-            }
-        ],
-        bridges: [
-            {k:"선생님의 견해에 일리가 있습니다. 더 나아가서 생각해보면...", c:"您的見解有道理。進一步思考的話..."},
-            {k:"매우 핵심적인 지적이십니다. 그렇다면 이 문제는 어떨까요?", c:"是非常核心的指正。那麼這個問題如何呢？"},
-            {k:"동전의 양면처럼 긍정적인 면과 부정적인 면이 공존하는 것 같군요.", c:"就像硬幣兩面，正面與負面似乎共存。"},
-            {k:"그 부분은 저도 미처 생각하지 못했던 통찰력이네요.", c:"那部分是我沒想到的洞察力呢。"}
-        ],
-        fallbacks: [
-            {k:"기술이 발전할수록 '디지털 격차(Digital Divide)' 문제가 심각해지고 있습니다. 노년층의 소외 문제는 어떻게 해결해야 할까요?", c:"技術越發展，數位落差問題越嚴重。老年層的疏離問題該如何解決？", hints:["디지털 리터러시 교육을 의무화해야 합니다. (數位素養教育義務化)"]},
-            {k:"편리함이 커지는 만큼 개인정보 유출이나 감시에 대한 우려도 큽니다. '빅브라더' 사회가 도래할 것이라고 보시나요?", c:"便利增加的同時，對個資外洩或監視的擔憂也很大。您認為「老大哥」社會會來臨嗎？", hints:["보안 기술 강화와 법적 규제가 반드시 병행되어야 합니다. (保安強化與法規並行)"]},
-            {k:"AI가 생성한 예술 작품이나 창작물의 저작권은 누구에게 있다고 생각하시나요?", c:"您認為AI生成的藝術作品或創作物，著作權歸誰所有？", hints:["명령어를 입력한 사용자가 가져야 한다고 봅니다. (輸入指令的使用者)", "AI는 도구일 뿐이므로 저작권을 인정하기 어렵습니다. (AI僅是工具難認可)"]},
-            {k:"기술의 발전이 인간을 더 행복하게 만들었다고 생각하시나요, 아니면 더 불행하게 만들었다고 보시나요?", c:"您認為技術發展讓人類更幸福了，還是更不幸了？", hints:["물질적 풍요는 얻었지만, 정신적 빈곤은 심화되었습니다. (物質豐富但精神貧困)", "삶의 질이 획기적으로 개선되었으므로 긍정적입니다. (生活品質改善所以肯定)"]},
-            {k:"결국 인간 고유의 가치는 무엇이라고 생각하시나요?", c:"您認為最終人類固有的價值是什麼？", hints:["타인의 고통에 공감하고 연대하는 마음입니다. (對他人痛苦共感並連帶的心)", "끊임없이 질문하고 성찰하는 능력입니다. (不斷提問與省察的能力)"]}
-        ]
+    social: {
+        topic: "社會議題與科技 (Social Issues)",
+        intro: "최근 인공지능(AI) 기술이 급격히 발전하고 있는데요, 이것이 장차 인간의 일자리를 위협한다고 생각하시나요?",
+        trans: "最近人工智慧(AI)技術急遽發展，您認為這將來會威脅人類的工作機會嗎？",
+        hints: ["단순 노동은 대체되겠지만, 창의적인 직업은 살아남을 것입니다. (單純勞動被取代)", "인간과 AI가 공존하는 새로운 형태의 일자리가 생길 겁니다. (產生共存的新工作形態)"]
     }
 };
 
-let currentScene = null;
-let usedFallbacks = new Set();
-const hintReactionMap = {
-    "저는 소비 습관이 안 맞으면 힘들더라고요.": {k: "소비 습관은 결혼까지 이어지는 중요한 문제죠.", c: "消費習慣是會延續到結婚的重要問題呢。"},
-    "연락 빈도 문제로 갈등이 생기곤 했어요.": {k: "연락 문제는 연애의 영원한 숙제인 것 같아요.", c: "聯絡問題似乎是戀愛永遠的課題。"},
-    "미래 비전이 다르면 관계 지속이 어렵죠.": {k: "맞아요, 같은 곳을 바라보는 게 중요하니까요.", c: "沒錯，看著同一個方向是很重要的。"},
-};
+let currentScenarioName = "一般對話";
 
+// 2. 初始化對話 (混合模式：本地開場 + 隨機出題)
 function initChat() {
     const v = document.getElementById('scenarioSel').value;
     const box = document.getElementById('chatBox');
     const hintContainer = document.getElementById('hintContainer');
     const hintBtn = document.getElementById('hintBtn');
     
+    // 清空畫面與重置狀態
     box.innerHTML = ''; 
     hintContainer.style.display = 'none'; 
-    hintBtn.classList.remove('active');
-    usedFallbacks.clear(); 
+    if(hintBtn) hintBtn.classList.remove('active');
     
-    if(v==='intro') { 
-        box.innerHTML = '<div class="msg msg-bot">請選擇情境。</div>'; 
+    if(v === 'intro') { 
+        box.innerHTML = '<div class="msg msg-bot">請選擇情境。我們將進行深度 AI 對話練習。</div>'; 
         return; 
     }
-    currentScene = chatData[v]; 
-    addBotMsg(currentScene.init.k, currentScene.init.c);
-    updateHints(currentScene.init.hints);
+    
+    // 從本地資料庫讀取設定
+    const scene = localScenarios[v];
+    currentScenarioName = scene ? scene.topic : "自由對話";
+    
+    // 顯示本地開場白 (模擬 AI 發言)
+    if (scene) {
+        addBotMsg(scene.intro, scene.trans);
+        // 設定第一輪的本地提示詞
+        updateHints(scene.hints);
+    } else {
+        addBotMsg("안녕하세요! 讓我們開始自由對話吧。", "你好！讓我們開始自由對話吧。");
+    }
 }
 
+// 3. 更新燈泡提示詞 (UI 渲染)
 function updateHints(hints) {
     const hintContainer = document.getElementById('hintContainer');
+    // 清空舊提示
     hintContainer.innerHTML = '<span class="hint-title">💡 TOPIK 5/6 級表達提示 (點擊複製):</span>';
+    
     if(hints && hints.length > 0) {
         hints.forEach(h => {
             const span = document.createElement('span');
             span.className = 'hint-item';
+            
+            // 解析 "韓文 (中文)" 格式
             let parts = h.split('(');
             let kr = parts[0].trim();
-            let cn = parts.length > 1 ? '(' + parts[1] : '';
+            let cn = parts.length > 1 ? '(' + parts[1] : ''; // 簡單防呆
             
             span.innerHTML = `${kr}<span class="hint-cn">${cn}</span>`;
-            span.onclick = function() { useHint(kr); };
+            
+            // 點擊後直接填入輸入框
+            span.onclick = function() { 
+                document.getElementById('uInput').value = kr;
+                toggleHint(); // 點選後自動收起提示框
+            };
             hintContainer.appendChild(span);
         });
-    } else {
-        hintContainer.style.display = 'none';
     }
 }
 
+// 4. 顯示/隱藏燈泡區域
 function toggleHint() {
     const el = document.getElementById('hintContainer');
     const btn = document.getElementById('hintBtn');
@@ -3066,12 +2941,87 @@ function toggleHint() {
     }
 }
 
-function useHint(text) {
-    document.getElementById('uInput').value = text;
+// 5. 發送訊息 (呼叫 AI)
+async function sendMsg() {
+    const i = document.getElementById('uInput');
+    const txt = i.value.trim();
+    if(!txt) return;
+    
+    // A. 顯示使用者訊息
+    const box = document.getElementById('chatBox');
+    const uDiv = document.createElement('div');
+    uDiv.className = 'msg msg-user';
+    uDiv.innerText = txt;
+    box.appendChild(uDiv);
+    
+    i.value = '';
+    box.scrollTop = box.scrollHeight;
+
+    // B. 顯示輸入中...
+    const typing = document.getElementById('typing');
+    typing.style.display = 'block';
+    
+    // 隱藏提示區
     document.getElementById('hintContainer').style.display = 'none';
-    document.getElementById('hintBtn').classList.remove('active');
+    const hintBtn = document.getElementById('hintBtn');
+    if(hintBtn) hintBtn.classList.remove('active');
+
+    try {
+        // C. 呼叫 Netlify Functions
+        const response = await fetch('/.netlify/functions/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                message: txt, 
+                scenario: currentScenarioName 
+            })
+        });
+
+        const data = await response.json();
+        typing.style.display = 'none';
+
+        // D. 處理回應
+        if (data.korean) {
+            // 1. 顯示 AI 韓文回應 + 隱藏翻譯按鈕
+            addBotMsg(data.korean, data.chinese);
+            
+            // 2. 如果 AI 有回傳新的提示詞，更新燈泡內容！
+            if (data.hints && Array.isArray(data.hints) && data.hints.length > 0) {
+                updateHints(data.hints);
+            }
+        } else {
+            addBotMsg(data.body || "系統忙碌中...", "System Error");
+        }
+
+    } catch (error) {
+        console.error("AI Error:", error);
+        typing.style.display = 'none';
+        addBotMsg("連線發生錯誤，請檢查網路。", "Connection Error");
+    }
 }
 
+// 6. 顯示機器人訊息 (關鍵 UI：按鈕翻譯)
+function addBotMsg(k, c) {
+    const box = document.getElementById('chatBox');
+    const id = 'tr-' + Date.now();
+    const div = document.createElement('div');
+    div.className = 'msg msg-bot';
+    
+    setTimeout(() => {
+        let html = k; // 先放韓文
+        if(c) {
+            // 再放翻譯按鈕 + 隱藏的中文
+            // 這邊使用了原本 CSS 的 .trans-btn 和 .trans-text 類別
+            // 顯示文字改為 [翻譯] 符合你的習慣，或是用 eye icon 也可以
+            html += `<div class="trans-btn" onclick="toggleTrans('${id}')" style="cursor:pointer; color:#999; font-size:0.8rem; margin-top:5px; text-align:right;">[翻譯]</div><div id="${id}" class="trans-text" style="display:none; color:#666; font-size:0.9rem; border-top:1px dashed #eee; padding-top:5px; margin-top:5px;">${c}</div>`;
+        }
+        div.innerHTML = html;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight; 
+    }, 100); 
+}
+
+// 7. 切換翻譯顯示
 function toggleTrans(id) {
     const el = document.getElementById(id);
     if (el.style.display === 'block') {
@@ -3081,122 +3031,7 @@ function toggleTrans(id) {
     }
 }
 
-function addBotMsg(k, c) {
-    const box = document.getElementById('chatBox');
-    const id = 'tr-' + Date.now();
-    const div = document.createElement('div');
-    div.className = 'msg msg-bot';
-    setTimeout(() => {
-        let html = k;
-        if(c) {
-            html += `<div class="trans-btn" onclick="toggleTrans('${id}')">[翻譯]</div><div id="${id}" class="trans-text">${c}</div>`;
-        }
-        div.innerHTML = html;
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight; 
-    }, 600); 
-}
-
-function sendMsg() {
-    const i = document.getElementById('uInput');
-    const txt = i.value.trim();
-    if(!txt) return;
-    
-    const box = document.getElementById('chatBox');
-    const uDiv = document.createElement('div');
-    uDiv.className = 'msg msg-user';
-    uDiv.innerText = txt;
-    box.appendChild(uDiv);
-    i.value = '';
-    box.scrollTop = box.scrollHeight;
-
-    const typing = document.getElementById('typing');
-    typing.style.display = 'block';
-    
-    document.getElementById('hintContainer').style.display = 'none';
-    document.getElementById('hintBtn').classList.remove('active');
-    
-    setTimeout(() => {
-        typing.style.display = 'none';
-        if(!currentScene) return;
-        
-        let specificReaction = null;
-        for (const [hintKey, reaction] of Object.entries(hintReactionMap)) {
-            if (txt.includes(hintKey)) { 
-                 specificReaction = reaction;
-                 break;
-            }
-        }
-
-        if (specificReaction) {
-             addBotMsg(specificReaction.k, specificReaction.c);
-             setTimeout(() => {
-                 askNextQuestion();
-             }, 1500);
-             return;
-        }
-
-        let match = null;
-        if (currentScene.intents) {
-            for (let intent of currentScene.intents) {
-                for (let key of intent.k) {
-                    if (txt.includes(key)) { match = intent; break; }
-                }
-                if (match) break;
-            }
-        }
-        
-        if (match) {
-            addBotMsg(match.rK, match.rC);
-            if(match.hints) updateHints(match.hints);
-        } else {
-            const pool = currentScene.fallbacks;
-            const availableIndices = pool.map((_, index) => index).filter(idx => !usedFallbacks.has(idx));
-            
-            let bridge = null;
-            if (currentScene.bridges && currentScene.bridges.length > 0) {
-                bridge = currentScene.bridges[Math.floor(Math.random() * currentScene.bridges.length)];
-            }
-
-            if (availableIndices.length > 0) {
-                const randIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-                usedFallbacks.add(randIndex);
-                const fb = pool[randIndex];
-                
-                if(bridge) {
-                    addBotMsg(bridge.k, bridge.c);
-                    setTimeout(() => {
-                        addBotMsg(fb.k, fb.c);
-                        if(fb.hints) updateHints(fb.hints);
-                    }, 1500);
-                } else {
-                    addBotMsg(fb.k, fb.c);
-                    if(fb.hints) updateHints(fb.hints);
-                }
-            } else {
-                usedFallbacks.clear();
-                addBotMsg("이 주제에 대해서는 충분히 대화한 것 같네요. 다른 주제로 넘어가거나, 다시 시작할까요?", "關於這話題似乎聊夠了。要換個話題或重新開始嗎？");
-            }
-        }
-    }, 800); 
-}
-
-function askNextQuestion() {
-    const pool = currentScene.fallbacks;
-    const availableIndices = pool.map((_, index) => index).filter(idx => !usedFallbacks.has(idx));
-    
-    if (availableIndices.length > 0) {
-        const randIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-        usedFallbacks.add(randIndex);
-        const fb = pool[randIndex];
-        addBotMsg(fb.k, fb.c);
-        if(fb.hints) updateHints(fb.hints);
-    } else {
-        usedFallbacks.clear();
-        addBotMsg("이야기가 정말 깊어졌네요. 다른 주제로 넘어가볼까요?", "話題真的變深了呢。要換個話題嗎？");
-    }
-}
-
+/* === END AI CHAT LOGIC === */
 // SPEAKING DB
 const speakingDB = [
     // === 1. BASIC (基礎對話 - 20題) ===
