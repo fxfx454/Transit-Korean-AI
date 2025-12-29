@@ -10,10 +10,10 @@ exports.handler = async function(event, context) {
     const userMessage = data.message || "";
     const scenario = data.scenario || "一般對話";
     
-    // 3. 直接取得 API Key (請確保 Netlify 環境變數 GEMINI_API_KEY 已設定且無空格)
+    // 3. 取得 API Key
     const apiKey = process.env.GEMINI_API_KEY;
     
-    // 4. 設定 AI 人設與規則 (System Prompt - 完整保留版)
+    // 4. 設定 AI 人設 (維持不變)
     const systemPrompt = `
     你是一位嚴格但溫柔的韓語家教，同時也是韓國綜藝《換乘戀愛(Transit Love)》S1~S4 的狂熱粉絲。
     
@@ -24,7 +24,6 @@ exports.handler = async function(event, context) {
     
     【情境控制】
     當前對話主題是：${scenario}
-    
     請根據主題調整你的語氣：
     - 如果主題是「戀愛/分手/糾葛」：請展現你對《換乘戀愛》的投入，用感性、共情甚至稍微激動的語氣回應。
     - 如果主題是「生活/剪髮/旅遊」或其他：請保持專業但熱情，用生動的方式（像是綜藝節目字幕般的口氣）提供實用的韓語建議，不要硬聊戀愛，但要保持「韓語家教」的身份。
@@ -35,55 +34,44 @@ exports.handler = async function(event, context) {
     3. 這 3 個選項必須是 TOPIK 5/6 級程度的高級韓語短句。
 
     【回應格式規定】
-    請絕對不要回傳純文字，必須回傳一個標準的 JSON 格式 (嚴禁使用 markdown 代碼區塊)：
+    請絕對不要回傳純文字，必須回傳一個標準的 JSON 格式 (嚴禁使用 markdown 符號)：
     {
-      "korean": "你的韓語回應 (請用自然口語)",
+      "korean": "你的韓語回應",
       "chinese": "對應的繁體中文翻譯",
-      "hints": [
-        "建議回答1 (中文翻譯)",
-        "建議回答2 (中文翻譯)",
-        "建議回答3 (中文翻譯)"
-      ]
+      "hints": ["建議1 (中)", "建議2 (中)", "建議3 (中)"]
     }
-
     注意：hints 陣列中的格式必須嚴格遵守 "韓文句子 (中文翻譯)" 的形式，例如 "시간이 해결해 줄 거예요 (時間會解決一切的)"。
     `;
 
-    // 5. 組合最終 Prompt
     const finalPrompt = `${systemPrompt}\n\n使用者說：${userMessage}\n\n請依照 JSON 格式回應：`;
 
-    // 6. 【關鍵改變】直接使用 fetch 發送請求 (繞過套件問題)
-    // 使用 gemini-1.5-flash 模型 (這是目前最穩定的免費版端點)
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // 5. 【關鍵修正】改用最穩定的 gemini-pro 模型
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
     
+    console.log("Attempting to connect to:", url.replace(apiKey, "HIDDEN_KEY")); // 日誌紀錄 (不外洩 Key)
+
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{
-          parts: [{ text: finalPrompt }]
-        }]
+        contents: [{ parts: [{ text: finalPrompt }] }]
       })
     });
 
-    // 7. 處理 Google 回傳的原始資料
+    // 6. 錯誤處理 (顯示更詳細的 Google 錯誤訊息)
     if (!response.ok) {
-      // 如果 Google 拒絕，這裡會抓到錯誤代碼 (例如 400, 403, 404)
-      throw new Error(`Google API Error: ${response.status} ${response.statusText}`);
+      const errorData = await response.json(); // 嘗試讀取 Google 回傳的詳細錯誤
+      console.error("Google API Error Detail:", JSON.stringify(errorData));
+      throw new Error(`Google API 拒絕連線: ${response.status} ${response.statusText} - ${errorData.error?.message || '未知錯誤'}`);
     }
 
     const resultData = await response.json();
     
-    // 檢查是否有內容
     if (!resultData.candidates || resultData.candidates.length === 0) {
-      throw new Error("No content generated from Google AI");
+      throw new Error("AI 有回應但內容是空的 (可能被安全過濾)");
     }
 
     const rawText = resultData.candidates[0].content.parts[0].text;
-
-    // 8. 清理 JSON 字串 (去除可能存在的 markdown 符號)
     let cleanText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
 
     return {
@@ -93,7 +81,7 @@ exports.handler = async function(event, context) {
     };
 
   } catch (error) {
-    console.error("Full Error Details:", error);
+    console.error("Critical Error:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: `系統錯誤: ${error.message}` })
