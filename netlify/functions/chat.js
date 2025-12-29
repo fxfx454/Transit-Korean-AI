@@ -48,7 +48,7 @@ exports.handler = async function(event, context) {
     const finalPrompt = `${systemPrompt}\n\n使用者說：${userMessage}\n\n請依照 JSON 格式回應：`;
 
     // 5. 使用 gemini-1.5-flash 模型 (直接連線)
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     
     console.log("Attempting to connect to:", url.replace(apiKey, "HIDDEN_KEY")); 
 
