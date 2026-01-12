@@ -150,7 +150,9 @@ exports.handler = async function(event, context) {
     console.error("Critical Error:", error);
     return {
       statusCode: 500,
-      headers: { "Access-Control-Allow-Origin": "https://transit-koreanai.netlify.app" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "https://transit-koreanai.netlify.app" },
       body: JSON.stringify({ error: `系統錯誤: ${error.message}` })
     };
   }
