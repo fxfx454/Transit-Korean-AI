@@ -126,10 +126,10 @@
             position: relative; 
         }
         .card-container { perspective: 1000px; width: 100%; height: 520px; max-height: 62dvh; position: relative; cursor: pointer; margin-bottom: 15px; flex-shrink: 1; }
-        .card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.4, 0.2, 0.2, 1); box-shadow: var(--shadow); border-radius: 24px; background: white; }
+        .card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.4, 0.2, 0.2, 1); background: transparent !important; box-shadow: none !important; border-radius: 24px; }
         .card.flipped { transform: rotateY(180deg); }
         
-        .face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; padding: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; padding: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: white; box-shadow: var(--shadow); transform: translateZ(0); }
         .front { background: white; }
         .back { transform: rotateY(180deg); background: #FAFAFA; justify-content: flex-start; padding-top: 25px; overflow-y: auto; text-align: left; align-items: flex-start; }
 
@@ -522,8 +522,8 @@
             min-height: 0;     
             padding-top: 15px;
             padding-bottom: 10px;
-            justify-content: flex-start; 
-            overflow-y: hidden; 
+            justify-content: center !important; 
+            overflow-y: visible; 
         }
 
         #vocab.active .card-container {
@@ -544,9 +544,10 @@
             width: 100%;
             background: var(--bg-color);
             padding-top: 10px;
-            padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* 關鍵安全距離 */
+            padding-bottom: calc(5px + env(safe-area-inset-bottom)); /* 關鍵安全距離 */
             margin-top: 0;
             z-index: 20;
+            display: flex;
         }
 
         /* 3. 口說實戰區 (#speaking) - 同步滿版優化 */
