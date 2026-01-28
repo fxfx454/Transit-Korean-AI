@@ -512,7 +512,9 @@
             display: flex;
             flex-direction: column;
             height: 100%;
+            padding: 0 15px !important; 
             padding-bottom: 0 !important; /* 移除舊有的底部留白 */
+            justify-content: space-between; 
         }
 
         /* 讓卡片區域變成彈簧，覆蓋舊的 520px 高度 */
@@ -541,7 +543,8 @@
         /* 按鈕區：沉浸式固定在底部，並自動避開 Home Bar */
         #vocab.active .manual-ctrl {
             flex-shrink: 0;
-            width: 100%;
+            width: 100vw;
+            margin-left: -15px;
             background: var(--bg-color);
             padding-top: 10px;
             padding-bottom: calc(5px + env(safe-area-inset-bottom)); /* 關鍵安全距離 */
