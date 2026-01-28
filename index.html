@@ -8,6 +8,8 @@
     
     <title>Transit Korean - TOPIK Master (V70 Final+)</title>
     
+    <link rel="icon" type="image/png" href="icon.png">
+
     <!-- PWA 核心設定 -->
     <link rel="manifest" href="manifest.json">
     
@@ -147,7 +149,7 @@
         .timer-bar { height: 100%; background: #E65100; width: 100%; }
 
         /* BACK CONTENT */
-        .back-header { width: 100%; display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 12px; }
+        .back-header { width: 100%; display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 12px; padding-right: 40px; } /* 關鍵：右邊多留 40px 給星星*/
         .back-word { font-size: 1.5rem; font-weight: 800; color: var(--secondary); }
         .back-def { font-size: 1rem; font-weight: 600; color: var(--primary); }
         
@@ -166,7 +168,7 @@
         .ex-cn { font-size: 0.85rem; color: #777; }
 
         .manual-ctrl { display: flex; gap: 15px; width: 100%; max-width: 400px; margin-top: 10px; justify-content: center; padding-bottom: 20px; }
-        .c-btn { width: 50px; height: 50px; border-radius: 50%; border: none; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 1.2rem; cursor: pointer; color: #555; transition: 0.1s; display: flex; align-items: center; justify-content: center; }
+        .c-btn { width: 42px; height: 42px; border-radius: 50%; border: none; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 1.1rem; cursor: pointer; color: #555; transition: 0.1s; display: flex; align-items: center; justify-content: center; }
         .c-btn:active { transform: scale(0.95); background: #f5f5f5; }
         .c-mark { width: auto; flex: 1; border-radius: 15px; font-size: 0.95rem; font-weight: 700; gap: 6px; }
         .c-mark.is-active { background: #FFB300; color: white; }
@@ -241,11 +243,11 @@
         /* Answer Box (Dashed) */
         .spk-ans-box { 
             width: 100%; border: 2px dashed #ddd; border-radius: 12px; padding: 15px; 
-            min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            height: auto !important; min-height: 100px; flex-shrink: 0 !important; display: flex; flex-direction: column; align-items: center; justify-content: flex-start !important; 
             background: #fafafa; margin-bottom: 10px; transition: 0.3s;
         }
-        .spk-hint-text { font-size: 1.1rem; color: #333; font-weight: 500; display: none; text-align: center; word-break: keep-all; } /* Target Korean */
-        .spk-final-cn { font-size: 0.9rem; color: #888; margin-top: 5px; display: none; text-align: center; }
+        .spk-hint-text { font-size: 1.1rem; color: #333; font-weight: 500; display: none; text-align: center; word-break: keep-all; margin-top: 10px; } /* Target Korean */
+        .spk-final-cn { font-size: 0.9rem; color: #888; margin-top: 8px; display: none; text-align: center; }
         
         .spk-user-feedback { font-size: 0.9rem; color: #aaa; font-style: italic; margin-top: 5px; }
 
@@ -483,7 +485,8 @@
         .rhythm-text { 
             font-size: 1.15rem; color: #2d3436; line-height: 1.6; 
             font-family: 'Courier New', Courier, monospace; /* 稍微區隔字體 */
-            display: none; text-align: center; word-break: keep-all; 
+            display: none; text-align: center; word-break: keep-all; margin-bottom: 12px; /* 增加間距 */
+            width: 100%; 
         }
         .rhythm-mark { color: #aaa; margin: 0 4px; font-weight: normal; }
         .rhythm-stress { color: #E65100; font-weight: 900; font-size: 1.2rem; }
@@ -503,6 +506,93 @@
         body.reflex-mode #speaking .spk-card {
             border: 2px solid #E65100;
             background: #FFF3E0;
+        }
+/* 2. 單字特訓區 (#vocab) - 沉浸式滿版優化 */
+        #vocab.active {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding-bottom: 0 !important; /* 移除舊有的底部留白 */
+        }
+
+        /* 讓卡片區域變成彈簧，覆蓋舊的 520px 高度 */
+        #vocab.active .card-area {
+            flex: 1;           
+            height: auto;      
+            min-height: 0;     
+            padding-top: 15px;
+            padding-bottom: 10px;
+            overflow-y: hidden; 
+        }
+
+        #vocab.active .card-container {
+            height: 100%; /* 跟隨父容器高度 */
+            margin-bottom: 0;
+        }
+
+        /* 卡片背面內容過長時，在卡片「裡面」捲動 */
+        #vocab.active .face.back {
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* 按鈕區：沉浸式固定在底部，並自動避開 Home Bar */
+        #vocab.active .manual-ctrl {
+            flex-shrink: 0;
+            width: 100%;
+            background: var(--bg-color);
+            padding-top: 10px;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* 關鍵安全距離 */
+            margin-top: 0;
+            z-index: 20;
+        }
+
+        /* 3. 口說實戰區 (#speaking) - 同步滿版優化 */
+        #speaking.active {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding-bottom: 0 !important;
+            justify-content: space-between;
+        }
+
+        #speaking.active .spk-card {
+            flex: 1;
+            margin-bottom: 10px;
+            max-height: none;
+            display: flex;
+            flex-direction: column;
+            position: relative; 
+            overflow: visible !important; /* 鎖死卡片，為了固定倒數線 */
+            padding: 0; /* 清除內距，改由內部容器控制 */
+        }
+
+        #speaking.active .spk-nav-row {
+            flex-shrink: 0;
+            width: 100%;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
+            margin-bottom: 10px;
+        }
+        .spk-scroll-content {
+            flex: 1;
+            overflow-y: auto;       /* 只有這裡面可以捲動 */
+            -webkit-overflow-scrolling: touch; /* 讓滑動更順暢 */
+            padding: 30px 20px;     
+            padding-bottom: 20px;   
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #speaking.active .timer-bar-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10; 
+            border-radius: 0 0 24px 24px; 
         }
     </style>
 </head>
@@ -666,7 +756,9 @@
         </div>
 
         <div class="spk-card">
-            <div class="spk-role" id="spkRole">FRIEND</div>
+            <!-- 1. 可捲動的內容層 (文字、麥克風都在這裡) -->
+            <div class="spk-scroll-content">
+                <div class="spk-role" id="spkRole">FRIEND</div>
             
             <!-- 題目 A (預設隱藏，按眼睛顯示) -->
             <div class="spk-q-container">
@@ -698,6 +790,7 @@
                 <!-- 使用者回饋 -->
                 <div class="spk-user-feedback" id="spkUserFeedback">點擊麥克風回答...</div>
             </div>
+        </div>
             <!-- 倒數計時條 (預設隱藏，特訓模式顯示) -->
             <div class="timer-bar-container" id="spkTimerBox" style="opacity:0;"><div class="timer-bar" id="spkTimerBar"></div></div>
         </div>
@@ -2727,6 +2820,9 @@ function setMode(mode) {
     }
     shuffle(activeList);
     idx = 0;
+    // [QA 修正] 清理口說實戰的計時器與殘留讀條
+    clearInterval(speakTimerInterval);
+    if(document.getElementById('spkTimerBox')) document.getElementById('spkTimerBox').style.opacity = '0';
     renderCard();
 }
 
