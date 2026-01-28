@@ -168,9 +168,9 @@
         .ex-cn { font-size: 0.85rem; color: #777; }
 
         .manual-ctrl { display: flex; gap: 15px; width: 100%; max-width: 400px; margin-top: 10px; justify-content: center; padding-bottom: 20px; flex-shrink: 0 !important; }
-        .c-btn { width: 42px; height: 42px; border-radius: 50%; border: none; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 1.1rem; cursor: pointer; color: #555; transition: 0.1s; display: flex; align-items: center; justify-content: center; }
+        .c-btn { width: 42px; height: 42px; border-radius: 50%; border: none; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 1.13rem; cursor: pointer; color: #555; transition: 0.1s; display: flex; align-items: center; justify-content: center; }
         .c-btn:active { transform: scale(0.95); background: #f5f5f5; }
-        .c-mark { width: auto; flex: 1; border-radius: 15px; font-size: 0.95rem; font-weight: 700; gap: 6px; }
+        .c-mark { width: auto; flex: 1; border-radius: 15px; font-size: 1rem; font-weight: 700; gap: 6px; }
         .c-mark.is-active { background: #FFB300; color: white; }
 
         /* CHAT UI */
@@ -512,9 +512,12 @@
             display: flex;
             flex-direction: column;
             height: 100%;
+            padding-top: 15px;      /* 保留頂部 */
+            padding-left: 15px;     /* 保留左邊 */
+            padding-right: 15px;    /* 保留右邊 */
             padding: 0 15px !important; 
             padding-bottom: 0 !important; /* 移除舊有的底部留白 */
-            justify-content: space-between; 
+            justify-content: flex-start !important; 
         }
 
         /* 讓卡片區域變成彈簧，覆蓋舊的 520px 高度 */
@@ -522,9 +525,12 @@
             flex: 1;           
             height: auto;      
             min-height: 0;     
-            padding-top: 15px;
-            padding-bottom: 10px;
+            padding-top: 10px;
+            padding-bottom: 0px;
+            margin-bottom: 0 !important;
             justify-content: center !important; 
+            display: flex;
+            flex-direction: column;
             overflow-y: visible; 
         }
 
@@ -543,14 +549,17 @@
         /* 按鈕區：沉浸式固定在底部，並自動避開 Home Bar */
         #vocab.active .manual-ctrl {
             flex-shrink: 0;
-            width: 100vw;
-            margin-left: -15px;
+            width: 100%;
+            max-width: 400px !important; 
+            margin-left: auto !important;
+            margin-right: auto !important;
             background: var(--bg-color);
             padding-top: 10px;
-            padding-bottom: calc(5px + env(safe-area-inset-bottom)); /* 關鍵安全距離 */
+            padding-bottom: env(safe-area-inset-bottom) !important; 
             margin-top: 0;
             z-index: 20;
             display: flex;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
         }
 
         /* 3. 口說實戰區 (#speaking) - 同步滿版優化 */
