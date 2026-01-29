@@ -102,8 +102,8 @@
         section.active { display: flex; }
 
         /* FILTER */
-        .filter-scroll { width: 100%; white-space: nowrap; overflow-x: auto; padding-bottom: 8px; text-align: center; flex-shrink: 0; position: relative; z-index: 5; min-height: 40px; -webkit-overflow-scrolling: touch; }
-        .filter-btn { display: inline-block; padding: 5px 12px; margin: 0 3px; border-radius: 20px; border: 1px solid #eee; background: white; font-size: 0.8rem; color: #555; cursor: pointer; transition: 0.2s; }
+        .filter-scroll { width: 100%; white-space: nowrap; overflow-x: auto; padding-bottom: 8px; text-align: center; flex-shrink: 0; position: relative; z-index: 5; min-height: 40px; -webkit-overflow-scrolling: touch; margin-top: 12px; }
+        .filter-btn { display: inline-block; padding: 5px 12px; margin: 0 3px; border-radius: 20px; border: 1px solid #eee; background: white; font-size: 0.85rem; color: #555; cursor: pointer; transition: 0.2s;  height: 32px;}
         .filter-btn.active { background: var(--secondary); color: white; border-color: var(--secondary); }
         .filter-btn.writing-btn { color: var(--writing-color); border-color: var(--writing-color); font-weight:bold; }
         .filter-btn.writing-btn.active { background: var(--writing-color); color: white; }
@@ -168,7 +168,7 @@
         .ex-cn { font-size: 0.85rem; color: #777; }
 
         .manual-ctrl { display: flex; gap: 15px; width: 100%; max-width: 400px; margin-top: 10px; justify-content: center; padding-bottom: 20px; flex-shrink: 0 !important; }
-        .c-btn { width: 42px; height: 42px; border-radius: 50%; border: none; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 1.13rem; cursor: pointer; color: #555; transition: 0.1s; display: flex; align-items: center; justify-content: center; }
+        .c-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 1.15rem; cursor: pointer; color: #555; transition: 0.1s; display: flex; align-items: center; justify-content: center; }
         .c-btn:active { transform: scale(0.95); background: #f5f5f5; }
         .c-mark { width: auto; flex: 1; border-radius: 15px; font-size: 1rem; font-weight: 700; gap: 6px; }
         .c-mark.is-active { background: #FFB300; color: white; }
@@ -525,7 +525,7 @@
             flex: 1;           
             height: auto;      
             min-height: 0;     
-            padding-top: 10px;
+            padding-top: 5px;
             padding-bottom: 0px;
             margin-bottom: 0 !important;
             justify-content: center !important; 
@@ -554,8 +554,10 @@
             margin-left: auto !important;
             margin-right: auto !important;
             background: var(--bg-color);
-            padding-top: 10px;
-            padding-bottom: env(safe-area-inset-bottom) !important; 
+            /* [測試用] 紅色半透明背景 (測試完請刪除此行 background) */
+            background: rgba(255, 0, 0, 0.2); 
+            padding-top: 8px;
+            padding-bottom: max(15px, calc(env(safe-area-inset-bottom) - 10px)) !important; 
             margin-top: 0;
             z-index: 20;
             display: flex;
@@ -2438,6 +2440,191 @@ const grammarDB = [
                 keywords: "聽說矮(작다며), 比例(비율)",
                 chunks: ["가: 너 소개팅한 사람", "키 작다며?", "나: 누가 그래?", "실제로 보니까", "키도 크고", "비율도", "좋던데요."],
                 decoys: ["좋더라고요", "좋았거든요", "좋네요", "좋다니"]
+            }
+        ]
+    },
+
+    // === G15. -다(가) 보니 (經驗領悟篇) ===
+    {
+        id: 'g15',
+        title: '-다(가) 보니 / -다(가) 보면',
+        sub: '過程中的發現與預測',
+        badge: '發現/預測',
+        study: {
+            concept: { ko: '어떤 행동을 지속하다가 새로운 사실을 알게 되거나, 미래의 결과를 예측할 때 씁니다.', cn: '持續做某事後「發現」了新事實，或是「預測」若持續下去會有什麼結果。(做著做著發現... / 這樣下去的話...)', percent: 80, percentText: '因果積累 (Accumulation)' },
+            conjugation: [ { t: '發現 (過去)', k: '-다(가) 보니(까)', d: '做著做著...就發現/變成了 (結果)' }, { t: '預測 (未來)', k: '-다(가) 보면', d: '持續做的話...就會 (預測)' } ],
+            comparison: [ { k: '-다 보니', d: '強調「過去經驗的累積」導致現在的結果' }, { k: '-다 보면', d: '強調「對未來的正面/中性預測」' }, { k: '-다가', d: '單純的動作轉換 (做到一半做別的)' } ],
+            rules: [ { type: 'o', text: '「가」通常可以省略 (-다 보니)' }, { type: 'o', text: '常用於自我介紹或訪談 (ex:  하다 보니 적성에 맞아서...)' } ],
+            examples: [ 
+                { k: '[戀綜] 매일 연락하고 지내다 보니 어느새 정이 들어버렸어요.', c: '每天聯絡著聯絡著，不知不覺就產生感情了。' }, 
+                { k: '[生活] 정신없이 일하다 보니 벌써 퇴근 시간이네요.', c: '忙得暈頭轉向地工作，一回神已經是下班時間了。' },
+                { k: '[建議] 포기하지 않고 꾸준히 노력하다 보면 좋은 결과가 있을 거예요.', c: '不放棄持續努力的話，會有好結果的。' }
+            ],
+            mirror: [ { tag: '單純動作', k: '밥을 먹다가 전화를 받았어요.', d: '吃飯吃到一半接電話 (動作中斷)。' }, { tag: '累積發現', k: '밥을 같이 먹다 보니 친해졌어요.', d: '因為常一起吃飯(累積)，所以變親近了(結果)。' } ]
+        },
+        practice: [
+            {
+                fullKo: "X랑 매일 같은 공간에서 지내다 보니, 예전에 좋았던 기억들이 자꾸 떠올라서 힘들어요.",
+                fullCn: "(戀綜) 因為跟前任(X)每天在同個空間生活，總是會想起以前美好的回憶，覺得很辛苦。",
+                tags: ["情感", "舊情復燃"],
+                keywords: "前任(X), 空間(공간), 想起(떠오르다)",
+                chunks: ["X랑 매일", "같은 공간에서", "지내다 보니,", "예전에 좋았던", "기억들이", "자꾸 떠올라서", "힘들어요."],
+                decoys: ["지내다 보면", "지내다가", "지내는 길에", "기억들조차"]
+            },
+            {
+                fullKo: "처음에는 단순히 호기심으로 시작했는데, 공부하다 보니 이 분야가 저랑 꽤 잘 맞는 것 같아요.",
+                fullCn: "(生活) 一開始只是單純好奇開始的，但讀著讀著發現，這個領域好像跟我蠻合的。",
+                tags: ["職涯", "興趣"],
+                keywords: "好奇心(호기심), 領域(분야), 合適(잘 맞다)",
+                chunks: ["처음에는", "단순히 호기심으로", "시작했는데,", "공부하다 보니", "이 분야가", "저랑 꽤", "잘 맞는 것 같아요."],
+                decoys: ["공부하다 보면", "공부하려던 참에", "공부한 탓에", "시작했으나"]
+            },
+            {
+                fullKo: "지금은 힘들겠지만, 서로 믿고 의지하며 살다 보면 분명히 웃을 날이 올 거야.",
+                fullCn: "(鼓勵) 雖然現在很辛苦，但若彼此信任依靠著生活下去，肯定會有笑逐顏開的一天。",
+                tags: ["未來預測", "希望"],
+                keywords: "依靠(의지하다), 肯定(분명히)",
+                chunks: ["지금은 힘들겠지만,", "서로 믿고", "의지하며", "살다 보면", "분명히", "웃을 날이", "올 거야."],
+                decoys: ["살다 보니", "살다가는", "살았더라면", "힘들어서"]
+            }
+        ]
+    },
+
+    // === G16. -다가는 (警告後果篇) ===
+    {
+        id: 'g16',
+        title: '-다가는',
+        sub: '對負面結果的警告',
+        badge: '警告/後果',
+        study: {
+            concept: { ko: '현재의 행동이나 상태가 계속되면 나쁜 결과가 생길 것이라고 경고할 때 씁니다.', cn: '警告若持續目前的行為或狀態，將會產生負面結果。(再這樣下去的話...會...)', percent: 90, percentText: '負面預警 (Warning)' },
+            conjugation: [ { t: '動詞', k: 'V-다가는', d: '再繼續(做)的話...' }, { t: '形容詞', k: 'A-다가는', d: '再繼續(這狀態)的話...' } ],
+            comparison: [ { k: '-다가는', d: '預測「負面」結果 (會出事的！)' }, { k: '-다 보면', d: '預測「一般/正面」結果 (會變好的/會習慣的)' }, { k: '-(으)면', d: '單純假設 (如果...)' } ],
+            rules: [ { type: 'o', text: '後句常接：-(으)ㄹ 것이다, -(으)ㄹ지도 모른다, -기 십상이다' }, { type: 'o', text: '強調「持續性」的危險' } ],
+            examples: [ 
+                { k: '[戀綜] 그렇게 자존심만 세우다가는 소중한 사람을 영영 잃게 될 거야.', c: '再那樣只顧著自尊心，你會永遠失去珍貴的人。' }, 
+                { k: '[生活] 돈을 이렇게 펑펑 쓰다가는 월급날이 오기도 전에 빈털터리가 될걸요.', c: '錢再這樣花下去，發薪日來臨前就會變窮光蛋喔。' },
+                { k: '[健康] 아픈 걸 참다가는 병을 더 키울 수 있어요.', c: '再忍著痛不看醫生，可能會讓病情惡化(養病)喔。' }
+            ],
+            mirror: [ { tag: '一般假設', k: '늦게 자면 피곤할 거야.', d: '晚睡的話會累 (普通陳述)。' }, { tag: '嚴重警告', k: '맨날 늦게 자다가는 건강 다 망칠 거야.', d: '每天再這樣晚睡下去，健康會全毀的 (強調嚴重性)。' } ]
+        },
+        practice: [
+            {
+                fullKo: "너 계속 그런 식으로 애매하게 행동하다가는, 그 사람 다른 사람한테 뺏길지도 몰라.",
+                fullCn: "(戀綜/警告) 你再繼續那樣曖昧不清地行動，那個人搞不好會被別人搶走喔。",
+                tags: ["戀愛", "忠告"],
+                keywords: "曖昧地(애매하게), 被搶走(뺏기다)",
+                chunks: ["너 계속", "그런 식으로", "애매하게", "행동하다가는,", "그 사람", "다른 사람한테", "뺏길지도 몰라."],
+                decoys: ["행동하다 보니", "행동하려던 참에", "행동해서", "뺏기기 마련이야"]
+            },
+            {
+                fullKo: "무리해서 일정 진행하다가는 직원들이 다 번아웃이 올 수 있으니 조절이 필요합니다.",
+                fullCn: "(職場) 再這樣勉強趕行程，員工們可能會全部過勞(Burnout)，需要調節一下。",
+                tags: ["工作", "管理"],
+                keywords: "勉強(무리하다), 過勞(번아웃)",
+                chunks: ["무리해서", "일정", "진행하다가는", "직원들이 다", "번아웃이 올 수 있으니", "조절이 필요합니다."],
+                decoys: ["진행하다 보니", "진행하더니", "진행하더라도", "올 텐데"]
+            },
+            {
+                fullKo: "제대로 알아보지도 않고 덜컥 계약했다가는 나중에 큰 손해를 볼 수 있습니다.",
+                fullCn: "(生活/詐騙) 沒仔細打聽就衝動簽約的話，之後可能會遭受巨大損失。",
+                tags: ["簽約", "謹慎"],
+                keywords: "衝動地(덜컥), 損失(손해)",
+                chunks: ["제대로", "알아보지도 않고", "덜컥", "계약했다가는", "나중에", "큰 손해를", "볼 수 있습니다."],
+                decoys: ["계약했다 보니", "계약했더니", "계약하느라", "계약하더라도"]
+            }
+        ]
+    },
+
+    // === G17. -(으)ㄹ 정도로 (程度誇飾篇 ) ===
+    {
+        id: 'g17',
+        title: '-(으)ㄹ 정도로',
+        sub: '強調程度與誇飾',
+        badge: '程度/誇飾',
+        study: {
+            concept: { ko: '어떤 상태나 행동의 정도가 매우 심함을 나타내기 위해 다른 상황에 비유하여 말할 때 씁니다.', cn: '為了表現某狀態或行為程度非常嚴重，而比喻成另一種狀況。(到了...的程度 / 簡直...)', percent: 75, percentText: '誇飾 (Exaggeration)' },
+            conjugation: [ { t: '動詞', k: 'V-(으)ㄹ 정도로', d: '到了(做)...的程度' }, { t: '形容詞', k: 'A-(으)ㄹ 정도로', d: '到了(覺得)...的程度' } ],
+            comparison: [ { k: '-(으)ㄹ 정도로', d: '強調程度的極端 (誇張)' }, { k: '-(으)ㄹ 만큼', d: '強調程度的相當 (數量/比例)', highlight: true }, { k: '-(으)ㄹ 지경이다', d: '到了...地步 (通常指負面、極限)' } ],
+            rules: [ { type: 'o', text: '常接副詞：숨이 막힐 정도로 (令人窒息地)' }, { type: 'o', text: '句尾形式：-(으)ㄹ 정도이다' } ],
+            examples: [ 
+                { k: '[戀綜] 그 사람을 다시 만났을 때, 심장이 터질 정도로 두근거렸어요.', c: '再次見到他時，心跳快到了簡直要爆炸的程度。' }, 
+                { k: '[生活] 요즘 프로젝트 때문에 밥 먹을 시간도 없을 정도로 바빠요.', c: '最近因為專案，忙到了連吃飯時間都沒有的程度。' },
+                { k: '[環境] 옆 사람 목소리가 안 들릴 정도로 음악 소리가 컸어요.', c: '音樂聲大到了聽不見旁邊人聲音的程度。' }
+            ],
+            mirror: [ { tag: '一般描述', k: '배가 많이 고파요.', d: '我很餓。' }, { tag: '高級誇飾', k: '배가 등 가죽에 붙을 정도로 고파요.', d: '餓到肚子都貼到背脊的程度了 (極度餓)。' } ]
+        },
+        practice: [
+            {
+                fullKo: "어제 그 영화 보면서 얼마나 울었는지, 오늘 눈이 퉁퉁 부어서 안 떠질 정도예요.",
+                fullCn: "(生活) 昨天看那電影不知道哭了多久，今天眼睛腫到張不開的程度。",
+                tags: ["誇飾", "狀態"],
+                keywords: "腫(퉁퉁 붓다), 張開(떠지다)",
+                chunks: ["어제 그 영화 보면서", "얼마나 울었는지,", "오늘 눈이", "퉁퉁 부어서", "안 떠질", "정도예요."],
+                decoys: ["안 떠질 만큼", "안 떠질 지경", "떠지더라도", "부어서는"]
+            },
+            {
+                fullKo: "그 사람의 거짓말에 너무 실망해서, 다시는 꼴도 보기 싫을 정도로 정이 떨어졌어.",
+                fullCn: "(戀綜/糾葛) 對他的謊言太失望，感情冷卻到了再也不想看到那張臉的程度。",
+                tags: ["憤怒", "絕交"],
+                keywords: "連臉都不想看(꼴도 보기 싫다), 感情冷卻/掉落(정이 떨어지다)",
+                chunks: ["그 사람의", "거짓말에", "너무 실망해서,", "다시는", "꼴도 보기 싫을", "정도로", "정이 떨어졌어."],
+                decoys: ["보기 싫을 만큼", "싫어서", "싫을 텐데", "싫으니까"]
+            },
+            {
+                fullKo: "이번 시험은 너무 어려워서 교과서를 통째로 외울 정도로 공부하지 않으면 합격하기 힘들 거야.",
+                fullCn: "(學習) 這次考試太難了，如果不讀到把教科書整本背下來的程度，很難合格的。",
+                tags: ["考試", "努力"],
+                keywords: "整本/整個(통째로), 背誦(외우다)",
+                chunks: ["이번 시험은", "너무 어려워서", "교과서를", "통째로 외울", "정도로", "공부하지 않으면", "합격하기 힘들 거야."],
+                decoys: ["외울 만큼", "외워서", "외우니까", "외울 지경으로"]
+            }
+        ]
+    },
+
+    // === G18. N만 하다 (生動譬喻篇 ) ===
+    {
+        id: 'g18',
+        title: 'N만 하다',
+        sub: '生動譬喻與大小比較',
+        badge: '譬喻/慣用',
+        study: {
+            concept: { ko: '사물의 크기나 정도를 다른 사물에 빗대어 표현할 때 씁니다. 주로 관용적인 표현으로 많이 쓰입니다.', cn: '將事物的大小或程度比喻成另一事物時使用。常用於慣用表現。(像...一樣大/小)', percent: 60, percentText: '形象化 (Visualization)' },
+            conjugation: [ { t: '名詞', k: 'N만 하다', d: '像N一樣(大/小)' }, { t: '慣用句', k: '쥐꼬리만 하다', d: '像老鼠尾巴一樣(少)' } ],
+            comparison: [ { k: 'N만 하다', d: '強調「大小、程度」的類似 (臉像拳頭大)' }, { k: 'N처럼 / N같이', d: '強調「樣子、性質」的類似 (像天使一樣善良)' } ],
+            rules: [ { type: 'o', text: '必學慣用喻體：쥐꼬리(極少), 주먹(極小), 대궐(極大/豪宅), 집채(極大/浪或山)' }, { type: 'o', text: '可用於貶義：목소리가 기어들어가는 소리만 하다 (聲音小到像縮進去一樣)' } ],
+            examples: [ 
+                { k: '[生活] 월급은 쥐꼬리만 한데 물가는 계속 오르네요.', c: '薪水只有老鼠尾巴那麼少，物價卻一直漲。' }, 
+                { k: '[戀綜] 그 사람 앞에만 서면 내 존재가 먼지만 하게 느껴져.', c: '只要站在他面前，就覺得我的存在像塵埃一樣渺小。' },
+                { k: '[生活] 목소리가 모기 소리만 해서 무슨 말인지 하나도 안 들려요.', c: '聲音像蚊子一樣小，說什麼一句都聽不見。' },
+                { k: '[誇飾] 간이 콩알만 해졌어요.', c: '嚇得肝變得像豆子一樣小 (嚇破膽)。' }
+            ],
+            mirror: [ { tag: '一般描述', k: '월급이 적어요.', d: '薪水很少。' }, { tag: '慣用譬喻', k: '월급이 쥐꼬리만 해요.', d: '薪水像老鼠尾巴一樣(少得可憐)。' } ]
+        },
+        practice: [
+            {
+                fullKo: "서울 집값은 너무 비싸서, 쥐꼬리만 한 월급을 모아서는 평생 집 한 채 사기 힘들어요.",
+                fullCn: "(生活) 首爾房價太貴，只存那像老鼠尾巴一樣少的薪水，一輩子都很難買一棟房。",
+                tags: ["慣用語", "現實"],
+                keywords: "老鼠尾巴(쥐꼬리), 一輩子(평생)",
+                chunks: ["서울 집값은", "너무 비싸서,", "쥐꼬리만 한", "월급을 모아서는", "평생", "집 한 채", "사기 힘들어요."],
+                decoys: ["쥐꼬리처럼", "쥐꼬리만 해서", "쥐꼬리 정도로", "모으더라도"]
+            },
+            {
+                fullKo: "갑자기 천둥이 치는 바람에 너무 놀라서 간이 콩알만 해지는 줄 알았어.",
+                fullCn: "(生活) 突然打雷嚇了一跳，我還以為肝縮得像豆子一樣小了呢(嚇死我了)。",
+                tags: ["慣用語", "驚嚇"],
+                keywords: "打雷(천둥이 치다), 肝(간), 豆子(콩알)",
+                chunks: ["갑자기", "천둥이 치는 바람에", "너무 놀라서", "간이", "콩알만 해지는 줄", "알았어."],
+                decoys: ["콩알처럼", "콩알만 해서", "해지려고", "콩알 정도로"]
+            },
+            {
+                fullKo: "너는 덩치는 산만 한 애가 왜 그렇게 겁이 많니?",
+                fullCn: "(吐槽) 你個頭像山一樣大的人，為什麼那麼膽小啊？",
+                tags: ["外貌", "吐槽"],
+                keywords: "塊頭(덩치), 山(산), 膽怯(겁이 많다)",
+                chunks: ["너는", "덩치는", "산만 한", "애가", "왜 그렇게", "겁이 많니?"],
+                decoys: ["산처럼", "산만 해서", "산만 하니까", "산 정도로"]
             }
         ]
     }
